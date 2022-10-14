@@ -1,0 +1,7 @@
+{
+  "name": "simple-crud-users",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "Leonardo <leonardomf1996@gmail.com>",
+  "license": "MIT"
+}
