@@ -1,4 +1,4 @@
-import { MissingParamError } from "../../errors";
+import { InvalidParamError, MissingParamError } from "../../errors";
 import { badRequest } from "../../helpers/http-helper";
 import { HttpRequest } from "../../protocols";
 
@@ -10,6 +10,12 @@ export class SignUpController {
          if (!httpRequest.body[field]) {
             return badRequest(new MissingParamError(field));
          }
+      }
+
+      const { name, email, password, passwordConfirmation } = httpRequest.body;
+
+      if (password !== passwordConfirmation) {
+         return badRequest(new InvalidParamError('passwordConfirmation'));
       }
    }
 }
