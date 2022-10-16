@@ -1,15 +1,28 @@
 import { InvalidParamError, MissingParamError } from "../../errors";
+import { EmailValidator } from "../../protocols/email-validator";
 import { SignUpController } from "./signup";
 
 interface SutType {
    sut: SignUpController;
+   emailValidatorStub: EmailValidator;
+}
+
+const makeEmailValidator = (): EmailValidator => {
+   class EmailValidatorStub implements EmailValidator {
+      isValid(email: string): boolean {
+         return true;
+      }
+   }
+   return new EmailValidatorStub();
 }
 
 const makeSut = (): SutType => {
-   const sut = new SignUpController();
+   const emailValidatorStub = makeEmailValidator();
+   const sut = new SignUpController(emailValidatorStub);
 
    return {
-      sut
+      sut,
+      emailValidatorStub,
    }
 }
 
@@ -98,5 +111,25 @@ describe('SignUp Controller', () => {
 
       expect(httpResponse.statusCode).toBe(400);
       expect(httpResponse.body).toEqual(new InvalidParamError('passwordConfirmation'));
+   })
+
+   test('Should return 400 if an email is provided', async () => {
+      const { sut, emailValidatorStub } = makeSut()
+
+      jest.spyOn(emailValidatorStub, 'isValid').mockReturnValueOnce(false);
+
+      const httpRequest = {
+         body: {
+            name: 'any_name',
+            email: 'invalid_email@mail.com',
+            password: 'any_password',
+            passwordConfirmation: 'any_password',
+         }
+      };
+
+      const httpResponse = await sut.execute(httpRequest);
+
+      expect(httpResponse.statusCode).toBe(400);
+      expect(httpResponse.body).toEqual(new InvalidParamError('email'));
    })
 })
